@@ -8,56 +8,8 @@ services:
     envVars:
       - key: PORT
         value: 8000
-      - key: GROQ_API_KEY
-        sync: false
-      - key: GROQ_MODEL
-        value: llama-3.3-70b-versatile
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-      - key: GOOGLE_ACCESS_TOKEN
-        sync: false
-      - key: GOOGLE_REFRESH_TOKEN
-        sync: false
-      - key: TIMEZONE
-        value: Asia/Kolkata
-      - key: NOTION_TOKEN
-        sync: false
-      - key: NOTION_BRIEFING_PARENT_PAGE_ID
-        sync: false
-      - key: NOTION_TASKS_DATABASE_ID
-        sync: false
-      - key: NOTION_FINANCE_DATABASE_ID
-        sync: false
-      - key: NOTION_MEETINGS_PARENT_PAGE_ID
-        sync: false
-      - key: YOUR_EMAIL
-        sync: false
-      - key: YOUR_NAME
-        sync: false
-      - key: CITY
-        value: Chennai
-      - key: TEMP_UNIT
-        value: celsius
-      - key: TELEGRAM_BOT_TOKEN
-        sync: false
-      - key: TELEGRAM_CHAT_ID
-        sync: false
-      - key: EMAIL_POLL_INTERVAL
-        value: 30
-      - key: EMAIL_HISTORY_DAYS
-        value: 7
-      - key: SECRET_KEY
-        sync: false
-
-  - type: worker
-    name: lifeos-v2-worker
-    runtime: python
-    plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: python monitor.py
-    envVars:
+      - key: RUN_MONITOR
+        value: true
       - key: GROQ_API_KEY
         sync: false
       - key: GROQ_MODEL
