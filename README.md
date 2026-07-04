@@ -71,6 +71,9 @@ YOUR_EMAIL=
 YOUR_NAME=
 CITY=Chennai
 TEMP_UNIT=celsius
+WATCHED_DOMAINS=
+WATCHED_ADDRESSES=
+TRIGGER_KEYWORDS=invoice,meeting,schedule,deadline,follow up,action required,task
 
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
@@ -79,6 +82,8 @@ EMAIL_POLL_INTERVAL=30
 EMAIL_HISTORY_DAYS=7
 PORT=8000
 SECRET_KEY=change_this_to_a_strong_secret
+RUN_MONITOR=true
+SKIP_EXISTING_ON_BOOT=false
 ```
 
 ### 3) Run the monitor
@@ -102,6 +107,17 @@ Open `http://localhost:8000`.
 - `GET /api/stats` -> aggregate counters
 - `GET /api/weather` -> weather card data
 
+## Dashboard Metrics
+
+The dashboard now highlights high-signal execution metrics, including:
+
+- Emails Received
+- Emails Processed
+- Replies Sent
+- Replies Skipped
+- Total Done Actions
+- Total Skipped Actions
+
 ## Validation and Quality Checks
 
 Use these commands before pushing changes:
@@ -121,12 +137,35 @@ This repository includes a ready-to-use blueprint file: `render.yaml`.
 3. Select the `lifeos_v2` project root when prompted.
 4. Render will create one service from `render.yaml`: `lifeos-v2-web`.
 5. The monitor runs in embedded mode inside the same service via `RUN_MONITOR=true`.
-6. Set the secret environment variables (all keys marked `sync: false`) and deploy.
+6. Set required environment variables and deploy.
+
+Required environment variables for production:
+
+- `GROQ_API_KEY`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_ACCESS_TOKEN`
+- `GOOGLE_REFRESH_TOKEN`
+- `NOTION_TOKEN`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+- `YOUR_EMAIL`
+
+Recommended deployment flags:
+
+- `RUN_MONITOR=true`
+- `SKIP_EXISTING_ON_BOOT=false`
 
 After deployment:
 
 - Open the web service URL and check `/api/health`.
 - Confirm logs show polling and Telegram notifications.
+- Open `/api/stats` and verify counters update after sending fresh test emails.
+
+Troubleshooting:
+
+- `invalid_grant`: regenerate Google OAuth tokens and update Render env vars.
+- Header whitespace errors for API keys: re-save env values without leading/trailing spaces.
 
 ## Repository Layout
 
