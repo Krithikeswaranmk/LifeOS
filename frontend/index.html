@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>LifeOS v2 — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0d0f18;--surface:#161925;--surface2:#1e2235;--surface3:#252a40;
+  --border:#2a2f4a;--accent:#7c6dfa;--accent2:#22d3ee;--accent3:#f472b6;
+  --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--orange:#f97316;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;}
+a{color:var(--accent2);text-decoration:none;}a:hover{text-decoration:underline;}
+.app{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.main{flex:1;overflow-y:auto;}
+.sidebar-top{padding:24px 20px 16px;}
+.logo{font-size:22px;font-weight:700;letter-spacing:-.5px;}
+.logo .os{color:var(--accent);}
+.logo .v{font-size:11px;color:var(--text3);font-weight:400;margin-left:4px;}
+.watching{margin-top:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.wl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-family:var(--mono);}
+.wa{font-size:11px;color:var(--accent2);font-family:var(--mono);margin-top:3px;word-break:break-all;}
+.pulse-row{display:flex;align-items:center;gap:7px;margin-top:7px;}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{opacity:.7;box-shadow:0 0 0 4px transparent}}
+.pt{font-size:11px;color:var(--green);}
+.nav{padding:8px 10px;flex:1;}
+.ni-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--text2);transition:all .15s;font-size:13px;margin-bottom:2px;user-select:none;}
+.ni-item:hover{background:var(--surface2);color:var(--text);}
+.ni-item.active{background:var(--surface3);color:var(--text);font-weight:500;}
+.ni{font-size:16px;width:20px;text-align:center;}
+.nbadge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;font-family:var(--mono);padding:1px 7px;border-radius:20px;}
+.sfooter{padding:14px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);}
+.page{padding:28px 32px;display:none;}
+.page.active{display:block;}
+.ptitle{font-size:20px;font-weight:600;margin-bottom:3px;}
+.psub{color:var(--text3);font-size:13px;margin-bottom:24px;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:26px;}
+.scard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.scard.c1::before{background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.scard.c2::before{background:linear-gradient(90deg,var(--green),var(--accent2));}
+.scard.c3::before{background:linear-gradient(90deg,var(--yellow),var(--orange));}
+.scard.c4::before{background:linear-gradient(90deg,var(--accent3),var(--red));}
+.scard.c5::before{background:linear-gradient(90deg,var(--accent2),var(--green));}
+.scard.c6::before{background:linear-gradient(90deg,var(--orange),var(--yellow));}
+.semoji{font-size:22px;margin-bottom:8px;}
+.snum{font-size:34px;font-weight:700;font-family:var(--mono);line-height:1;}
+.slabel{font-size:11px;color:var(--text3);margin-top:5px;text-transform:uppercase;letter-spacing:.5px;}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:26px;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.ctitle{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px;font-family:var(--mono);}
+.bar-chart{display:flex;flex-direction:column;gap:9px;}
+.bar-row{display:flex;align-items:center;gap:9px;}
+.bar-lbl{font-size:11px;color:var(--text2);width:120px;flex-shrink:0;}
+.bar-track{flex:1;background:var(--surface2);border-radius:3px;height:7px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;transition:width .7s ease;}
+.bar-n{font-size:11px;color:var(--text3);font-family:var(--mono);width:24px;text-align:right;}
+.donut-wrap{display:flex;align-items:center;gap:20px;}
+.dlegend{display:flex;flex-direction:column;gap:9px;}
+.li{display:flex;align-items:center;gap:8px;font-size:12px;}
+.ld{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.stitle{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:11px;}
+.alist{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.arow{display:grid;grid-template-columns:34px 1fr 150px 88px 95px;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);transition:background .1s;}
+.arow:last-child{border-bottom:none;}
+.arow:hover{background:var(--surface2);}
+.arow.hdr{background:var(--surface2);font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-family:var(--mono);padding:8px 14px;}
+.aicon{font-size:17px;text-align:center;}
+.asubject{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.afrom{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.aaction{font-size:12px;color:var(--text2);}
+.aresult{font-size:10px;color:var(--accent2);font-family:var(--mono);margin-top:2px;}
+.pill{display:inline-block;font-size:10px;padding:2px 9px;border-radius:20px;font-family:var(--mono);}
+.pdone{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);}
+.pskip{background:rgba(100,116,139,.12);color:var(--text3);border:1px solid var(--border);}
+.pfail{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25);}
+.atime{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.filters{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.fbtn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;font-size:12px;transition:all .15s;}
+.fbtn:hover{border-color:var(--accent);color:var(--text);}
+.fbtn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.sbar{flex:1;max-width:260px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 11px;border-radius:6px;font-size:12px;font-family:var(--mono);outline:none;}
+.sbar:focus{border-color:var(--accent);}
+.sbar::placeholder{color:var(--text3);}
+.empty{text-align:center;padding:60px 20px;color:var(--text3);}
+.empty .big{font-size:44px;margin-bottom:10px;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sidebar">
+  <div class="sidebar-top">
+    <div class="logo">Life<span class="os">OS</span><span class="v">v2</span></div>
+    <div class="watching">
+      <div class="wl">Monitoring</div>
+      <div class="wa">krithikeswaranmk@gmail.com</div>
+      <div class="pulse-row"><div class="pulse"></div><span class="pt">Active</span></div>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="ni-item active" onclick="nav('dashboard')" id="nav-dashboard"><span class="ni">🏠</span>Dashboard</div>
+    <div class="ni-item" onclick="nav('history')" id="nav-history"><span class="ni">📋</span>History<span class="nbadge" id="hist-badge">0</span></div>
+    <div class="ni-item" onclick="nav('stats')" id="nav-stats"><span class="ni">📊</span>Full Stats</div>
+  </div>
+  <div class="sfooter">
+    <div>Auto-refreshes every 30s</div>
+    <div id="last-refresh" style="margin-top:3px">Last: —</div>
+  </div>
+</div>
+
+<div class="main">
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="ptitle">Dashboard</div>
+    <div class="psub">Live overview of everything the LifeOS agent has done</div>
+    <div class="stats-grid" id="sg1"></div>
+    <div class="charts-row">
+      <div class="chart-card"><div class="ctitle">Actions by Type</div><div class="bar-chart" id="bc1"></div></div>
+      <div class="chart-card"><div class="ctitle">Outcome Breakdown</div>
+        <div class="donut-wrap"><canvas id="donut" width="110" height="110"></canvas><div class="dlegend" id="dleg"></div></div>
+      </div>
+    </div>
+    <div class="stitle">Recent Activity</div>
+    <div id="recent"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="page" id="page-history">
+    <div class="ptitle">Full History</div>
+    <div class="psub">Every action the agent has taken or skipped</div>
+    <div class="filters">
+      <button class="fbtn active" onclick="setF('all',this)">All</button>
+      <button class="fbtn" onclick="setF('done',this)">✅ Done</button>
+      <button class="fbtn" onclick="setF('skipped',this)">⏭ Skipped</button>
+      <button class="fbtn" onclick="setF('failed',this)">❌ Failed</button>
+      <button class="fbtn" onclick="setF('create_calendar_event',this)">📅 Meetings</button>
+      <button class="fbtn" onclick="setF('create_task',this)">✅ Tasks</button>
+      <button class="fbtn" onclick="setF('log_invoice',this)">💰 Invoices</button>
+      <button class="fbtn" onclick="setF('send_reply',this)">📧 Replies</button>
+      <input class="sbar" id="sq" placeholder="Search subject, sender..." oninput="renderHist()"/>
+    </div>
+    <div id="hlist"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="page" id="page-stats">
+    <div class="ptitle">Full Stats</div>
+    <div class="psub">Detailed breakdown of agent activity</div>
+    <div class="stats-grid" id="sg2"></div>
+    <div class="charts-row" style="margin-top:14px">
+      <div class="chart-card"><div class="ctitle">Actions by Type</div><div class="bar-chart" id="bc2"></div></div>
+      <div class="chart-card"><div class="ctitle">Daily Activity — Last 7 Days</div><div class="bar-chart" id="daily"></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const API='http://localhost:8000/api';
+let H=[],S={},filt='all';
+
+function nav(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.ni-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('nav-'+p).classList.add('active');
+  if(p==='stats') renderStats();
+}
+
+async function load(){
+  try{
+    const [hr,sr]=await Promise.all([fetch(`${API}/history`),fetch(`${API}/stats`)]);
+    H=(await hr.json()).history||[];
+    S=await sr.json();
+    document.getElementById('hist-badge').textContent=H.length;
+    document.getElementById('last-refresh').textContent='Last: '+new Date().toLocaleTimeString();
+    renderDash();renderHist();
+  }catch(e){console.error(e);}
+}
+
+function renderDash(){
+  const cards=[
+    {n:S.emails_processed||0,   l:'Emails Processed',   e:'📬',c:'c1'},
+    {n:S.meetings_scheduled||0, l:'Meetings Scheduled',  e:'📅',c:'c2'},
+    {n:S.tasks_created||0,      l:'Tasks Created',       e:'✅',c:'c3'},
+    {n:S.invoices_logged||0,    l:'Invoices Logged',     e:'💰',c:'c4'},
+    {n:S.replies_sent||0,       l:'Replies Sent',        e:'📧',c:'c5'},
+    {n:S.estimated_minutes_saved||0,l:'Minutes Saved',   e:'⏱️',c:'c6'},
+  ];
+  document.getElementById('sg1').innerHTML=cards.map(c=>`
+    <div class="scard ${c.c}"><div class="semoji">${c.e}</div><div class="snum">${c.n}</div><div class="slabel">${c.l}</div></div>`).join('');
+  barChart('bc1');donut();
+  const items=H.slice(0,12);
+  document.getElementById('recent').innerHTML=items.length===0?
+    '<div class="empty"><div class="big">🤖</div><div>No activity yet. Run monitor.py and send an email from the watched address.</div></div>':
+    `<div class="alist"><div class="arow hdr"><div></div><div>Email</div><div>Action</div><div style="text-align:center">Status</div><div>Time</div></div>${items.map(arow).join('')}</div>`;
+}
+
+function barChart(id){
+  const cts={};
+  H.forEach(h=>{const k=h.action_type||'other';cts[k]=(cts[k]||0)+1;});
+  const types=[
+    {k:'create_calendar_event',l:'📅 Meetings', col:'#7c6dfa'},
+    {k:'create_task',          l:'✅ Tasks',    col:'#22c55e'},
+    {k:'send_reply',           l:'📧 Replies',  col:'#22d3ee'},
+    {k:'log_invoice',          l:'💰 Invoices', col:'#f59e0b'},
+    {k:'create_reminder',      l:'🔔 Reminders',col:'#f472b6'},
+  ];
+  const mx=Math.max(1,...Object.values(cts));
+  document.getElementById(id).innerHTML=types.map(t=>{
+    const n=cts[t.k]||0,p=Math.round(n/mx*100);
+    return`<div class="bar-row"><div class="bar-lbl">${t.l}</div><div class="bar-track"><div class="bar-fill" style="width:${p}%;background:${t.col}"></div></div><div class="bar-n">${n}</div></div>`;
+  }).join('');
+}
+
+function donut(){
+  const done=H.filter(h=>h.status==='done').length;
+  const skip=H.filter(h=>h.status==='skipped').length;
+  const fail=H.filter(h=>h.status==='failed').length;
+  const tot=done+skip+fail||1;
+  const data=[{l:'Done',n:done,col:'#22c55e'},{l:'Skipped',n:skip,col:'#64748b'},{l:'Failed',n:fail,col:'#ef4444'}];
+  const cv=document.getElementById('donut');if(!cv)return;
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,110,110);
+  let ang=-Math.PI/2;
+  data.forEach(d=>{
+    if(!d.n)return;
+    const sl=(d.n/tot)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(55,55);ctx.arc(55,55,46,ang,ang+sl);ctx.closePath();ctx.fillStyle=d.col;ctx.fill();
+    ang+=sl;
+  });
+  ctx.beginPath();ctx.arc(55,55,26,0,Math.PI*2);ctx.fillStyle='#161925';ctx.fill();
+  ctx.fillStyle='#e2e8f0';ctx.font='bold 15px JetBrains Mono';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(tot,55,55);
+  document.getElementById('dleg').innerHTML=data.map(d=>`
+    <div class="li"><div class="ld" style="background:${d.col}"></div><span style="color:var(--text2)">${d.l}</span><span style="color:var(--text3);font-family:var(--mono);margin-left:8px">${d.n}</span></div>`).join('');
+}
+
+function arow(h){
+  const icons={create_calendar_event:'📅',create_task:'✅',send_reply:'📧',log_invoice:'💰',create_reminder:'🔔'};
+  const icon=icons[h.action_type]||'⚙️';
+  const sc=h.status==='done'?'pdone':h.status==='skipped'?'pskip':'pfail';
+  const res=h.result&&h.result.startsWith('http')?`<div class="aresult"><a href="${h.result}" target="_blank">↗ View</a></div>`:
+    h.result?`<div class="aresult">${h.result.substring(0,35)}…</div>`:'';
+  return`<div class="arow">
+    <div class="aicon">${icon}</div>
+    <div><div class="asubject" title="${h.email_subject||''}">${h.email_subject||'—'}</div><div class="afrom">${h.email_from||''}</div></div>
+    <div class="aaction">${h.action_label||h.action_type}${res}</div>
+    <div style="text-align:center"><span class="pill ${sc}">${h.status}</span></div>
+    <div class="atime">${ft(h.timestamp)}</div>
+  </div>`;
+}
+
+function setF(f,btn){
+  filt=f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderHist();
+}
+
+function renderHist(){
+  const q=(document.getElementById('sq')?.value||'').toLowerCase();
+  let items=H;
+  if(filt!=='all') items=items.filter(h=>h.status===filt||h.action_type===filt);
+  if(q) items=items.filter(h=>(h.email_subject||'').toLowerCase().includes(q)||(h.email_from||'').toLowerCase().includes(q)||(h.action_label||'').toLowerCase().includes(q));
+  document.getElementById('hlist').innerHTML=items.length===0?
+    '<div class="empty"><div class="big">🔍</div><div>No results.</div></div>':
+    `<div class="alist"><div class="arow hdr"><div></div><div>Email</div><div>Action</div><div style="text-align:center">Status</div><div>Time</div></div>${items.map(arow).join('')}</div>`;
+}
+
+function renderStats(){
+  const cards=[
+    {n:S.emails_processed||0,   l:'Total Emails Processed',e:'📬',c:'c1'},
+    {n:S.meetings_scheduled||0, l:'Meetings Scheduled',    e:'📅',c:'c2'},
+    {n:S.tasks_created||0,      l:'Tasks Created',         e:'✅',c:'c3'},
+    {n:S.invoices_logged||0,    l:'Invoices Logged',       e:'💰',c:'c4'},
+    {n:S.reminders_set||0,      l:'Reminders Set',         e:'🔔',c:'c5'},
+    {n:S.replies_sent||0,       l:'Replies Sent',          e:'📧',c:'c6'},
+  ];
+  document.getElementById('sg2').innerHTML=cards.map(c=>`
+    <div class="scard ${c.c}"><div class="semoji">${c.e}</div><div class="snum">${c.n}</div><div class="slabel">${c.l}</div></div>`).join('');
+  barChart('bc2');
+  // Daily chart
+  const days=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push({date:d.toISOString().slice(0,10),label:d.toLocaleDateString('en',{weekday:'short'}),n:0});}
+  H.forEach(h=>{const day=(h.timestamp||'').slice(0,10);const f=days.find(d=>d.date===day);if(f)f.n++;});
+  const mx=Math.max(1,...days.map(d=>d.n));
+  document.getElementById('daily').innerHTML=days.map(d=>`
+    <div class="bar-row">
+      <div class="bar-lbl">${d.label} <span style="color:var(--text3);font-size:10px">${d.date.slice(5)}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(d.n/mx*100)}%;background:var(--accent)"></div></div>
+      <div class="bar-n">${d.n}</div>
+    </div>`).join('');
+}
+
+function ft(iso){
+  if(!iso)return'—';
+  try{
+    const d=new Date(iso),now=new Date(),diff=Math.floor((now-d)/60000);
+    if(diff<1)return'just now';if(diff<60)return diff+'m ago';
+    if(diff<1440)return Math.floor(diff/60)+'h ago';
+    return d.toLocaleDateString('en',{month:'short',day:'numeric'});
+  }catch(e){return iso;}
+}
+
+load();
+setInterval(load,30000);
+</script>
+</body>
+</html>
