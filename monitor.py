@@ -28,9 +28,34 @@ R="\033[0m"; B="\033[1m"; DIM="\033[2m"
 CYAN="\033[96m"; GREEN="\033[92m"; YELLOW="\033[93m"
 RED="\033[91m"; MAGENTA="\033[95m"; WHITE="\033[97m"
 
-WATCHED_ADDRESS = "krithikeswaranmk@gmail.com"
 SEEN_FILE = Path(__file__).parent / "data" / "seen_ids.txt"
 tg: Optional[TelegramAgent] = None
+
+
+def should_process_email(email: dict) -> bool:
+    sender = (email.get("from", "") or "").lower()
+    subject = (email.get("subject", "") or "").lower()
+    snippet = (email.get("snippet", "") or "").lower()
+    haystack = f"{subject} {snippet}"
+
+    # If no watch filters are configured, process all incoming messages.
+    if not config.WATCHED_ADDRESSES and not config.WATCHED_DOMAINS:
+        return True
+
+    for address in config.WATCHED_ADDRESSES:
+        if address.lower() in sender:
+            return True
+
+    for domain in config.WATCHED_DOMAINS:
+        domain_l = domain.lower().lstrip("@")
+        if f"@{domain_l}" in sender:
+            return True
+
+    for keyword in config.TRIGGER_KEYWORDS:
+        if keyword and keyword in haystack:
+            return True
+
+    return False
 
 def load_seen():
     SEEN_FILE.parent.mkdir(exist_ok=True)
@@ -66,12 +91,15 @@ def groq(prompt, max_tokens=300):
     return r.json()["choices"][0]["message"]["content"].strip()
 
 def print_banner():
+    watched = ", ".join(config.WATCHED_ADDRESSES) if config.WATCHED_ADDRESSES else "(all senders)"
+    domains = ", ".join(config.WATCHED_DOMAINS) if config.WATCHED_DOMAINS else "(none)"
     print()
     print(f"{CYAN}{B}{'='*64}{R}")
     print(f"{CYAN}{B}   LifeOS v2  --  Intelligent Mail Monitor{R}")
     print(f"{CYAN}{B}{'='*64}{R}")
     print()
-    print(f"  {DIM}Watching :{R}  {WHITE}{WATCHED_ADDRESS}{R}")
+    print(f"  {DIM}Watch list:{R}  {WHITE}{watched}{R}")
+    print(f"  {DIM}Domains   :{R}  {WHITE}{domains}{R}")
     print(f"  {DIM}Interval :{R}  {WHITE}every {config.EMAIL_POLL_INTERVAL}s{R}")
     print(f"  {DIM}AI Model :{R}  {WHITE}{config.GROQ_MODEL}{R}")
     print(f"  {DIM}Dashboard:{R}  {WHITE}http://localhost:8000{R}")
@@ -491,14 +519,15 @@ def main():
     else:
         info(f"Loaded {len(seen)} seen email IDs")
 
-    info(f"Watching {WHITE}{B}{WATCHED_ADDRESS}{R} for new mail...\n")
+    info("Watching for new mail using configured filters...\n")
 
     while True:
         try:
             for email in reversed(gmail.get_recent_emails(20, 1)):
                 if email["id"] in seen: continue
                 seen.add(email["id"]); save_seen(seen)
-                if WATCHED_ADDRESS.lower() not in email.get("from","").lower(): continue
+                if not should_process_email(email):
+                    continue
                 process_email(email, gmail, calendar, notion, classifier)
         except KeyboardInterrupt:
             print(); info("Shutting down. Goodbye!"); break
