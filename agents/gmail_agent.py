@@ -24,6 +24,13 @@ class GmailAgent:
         )
         self.service = build("gmail", "v1", credentials=creds, cache_discovery=False)
 
+    def get_profile_email(self) -> str:
+        try:
+            profile = self.service.users().getProfile(userId="me").execute()
+            return profile.get("emailAddress", "")
+        except Exception:
+            return ""
+
     def get_recent_emails(self, max_results: int = 30, days_back: int = 7) -> list[dict]:
         after_date = (datetime.utcnow() - timedelta(days=days_back)).strftime("%Y/%m/%d")
         query = f"after:{after_date} -category:promotions -category:social"

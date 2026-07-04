@@ -490,8 +490,10 @@ def process_email(email, gmail, calendar, notion, classifier):
 def main():
     global tg
     print_banner()
+    connected_mailbox = ""
     try:
         gmail      = GmailAgent(config.GOOGLE_CREDENTIALS)
+        connected_mailbox = gmail.get_profile_email()
         calendar   = CalendarAgent(config.GOOGLE_CREDENTIALS, config.TIMEZONE)
         notion     = NotionAgent(config.NOTION_TOKEN, config.NOTION_TASKS_DATABASE_ID,
                                   config.NOTION_FINANCE_DATABASE_ID,
@@ -510,12 +512,26 @@ def main():
         warn("Telegram not configured — running terminal-only.")
         info("See README for 2-minute Telegram setup.")
 
+    if connected_mailbox:
+        info(f"Connected Gmail inbox: {connected_mailbox}")
+        if config.YOUR_EMAIL and connected_mailbox.lower() != config.YOUR_EMAIL.strip().lower():
+            warn(f"YOUR_EMAIL is {config.YOUR_EMAIL}, but OAuth token points to {connected_mailbox}")
+        if tg:
+            tg.send(
+                f"LifeOS connected. Ready to receive email alerts.\n"
+                f"Connected inbox: <b>{_escape(connected_mailbox)}</b>"
+            )
+
     seen = load_seen()
     if len(seen) == 0:
-        info("First run — marking existing emails as seen...")
-        for e in gmail.get_recent_emails(50, config.EMAIL_HISTORY_DAYS): seen.add(e["id"])
-        save_seen(seen)
-        info(f"Marked {len(seen)} existing emails. Only NEW emails will trigger actions.")
+        if config.SKIP_EXISTING_ON_BOOT:
+            info("First run — marking existing emails as seen...")
+            for e in gmail.get_recent_emails(50, config.EMAIL_HISTORY_DAYS):
+                seen.add(e["id"])
+            save_seen(seen)
+            info(f"Marked {len(seen)} existing emails. Only NEW emails will trigger actions.")
+        else:
+            info("First run with SKIP_EXISTING_ON_BOOT=false — recent unseen emails will be processed.")
     else:
         info(f"Loaded {len(seen)} seen email IDs")
 
@@ -535,6 +551,11 @@ def main():
             import traceback
             traceback.print_exc()
             error(f"Poll error: {e!r}")
+            if tg:
+                try:
+                    tg.send(f"LifeOS poll error: {_escape(str(e))}")
+                except Exception:
+                    pass
         try:
             for r in range(config.EMAIL_POLL_INTERVAL, 0, -1):
                 print(f"\r  {DIM}Next check in {r:3d}s  (Ctrl+C to quit){R}", end="", flush=True)

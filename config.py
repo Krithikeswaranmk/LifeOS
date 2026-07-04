@@ -38,6 +38,7 @@ CITY = os.getenv("CITY", "Chennai")
 TEMP_UNIT = os.getenv("TEMP_UNIT", "celsius")
 EMAIL_HISTORY_DAYS = int(os.getenv("EMAIL_HISTORY_DAYS", "7"))
 SECRET_KEY = os.getenv("SECRET_KEY", "changeme")
+SKIP_EXISTING_ON_BOOT = os.getenv("SKIP_EXISTING_ON_BOOT", "false").strip().lower() in ("1", "true", "yes", "on")
 
 GOOGLE_CREDENTIALS = {
     "access_token": GOOGLE_ACCESS_TOKEN,

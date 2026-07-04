@@ -10,6 +10,8 @@ services:
         value: 8000
       - key: RUN_MONITOR
         value: true
+      - key: SKIP_EXISTING_ON_BOOT
+        value: false
       - key: GROQ_API_KEY
         sync: false
       - key: GROQ_MODEL
