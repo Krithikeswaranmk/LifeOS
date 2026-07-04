@@ -112,6 +112,24 @@ python run.py
 python monitor.py
 ```
 
+## Deploy in 5 Minutes (Render - Easiest)
+
+This repository includes a ready-to-use blueprint file: `render.yaml`.
+
+1. Open Render and click New + -> Blueprint.
+2. Connect your GitHub repository: `Krithikeswaranmk/LifeOS`.
+3. Select the `lifeos_v2` project root when prompted.
+4. Render will create two services from `render.yaml`:
+	- `lifeos-v2-web` (FastAPI dashboard)
+	- `lifeos-v2-worker` (email monitor)
+5. In each service, set the secret environment variables (all keys marked `sync: false`).
+6. Deploy both services.
+
+After deployment:
+
+- Open the web service URL and check `/api/health`.
+- Confirm worker logs show polling and Telegram notifications.
+
 ## Repository Layout
 
 ```text
