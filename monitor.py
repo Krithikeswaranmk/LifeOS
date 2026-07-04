@@ -390,7 +390,7 @@ def handle_invoice(action, email, notion):
         error(f"Failed: {ex}")
         add_to_history(email, "log_invoice", action["label"], "failed", "", str(ex))
 
-def handle_reply(draft, subject, email, gmail):
+def handle_reply(draft, subject, email, gmail, action_label="Send reply"):
     print(); hr("-",62,DIM)
     print(f"  {B}Reply Draft:{R}"); hr("-",62,DIM)
     print(f"  To:      {email.get('from','')}"); print(f"  Subject: {subject}"); print()
@@ -417,13 +417,17 @@ def handle_reply(draft, subject, email, gmail):
                 success("Reply sent!")
                 if tg: tg.send(f"Reply sent to {_escape(email.get('from',''))}")
                 increment_stat("replies_sent")
+                add_to_history(email, "send_reply", action_label, "done", "sent")
             else:
                 error("Failed to send.")
+                add_to_history(email, "send_reply", action_label, "failed", "", "Send API returned false")
         except Exception as ex:
             error(f"Send error: {ex}")
+            add_to_history(email, "send_reply", action_label, "failed", "", str(ex))
     else:
         info("Reply skipped.")
         increment_stat("replies_skipped")
+        add_to_history(email, "send_reply", action_label, "skipped", "User skipped")
 
 def process_email(email, gmail, calendar, notion, classifier):
     email["body"] = gmail.get_email_body(email["id"])
@@ -481,7 +485,7 @@ def process_email(email, gmail, calendar, notion, classifier):
     if reply_action:
         subject = reply_action.get("data",{}).get("subject", f"Re: {email.get('subject','')}")
         draft = generate_reply(email, completed_actions)
-        handle_reply(draft, subject, email, gmail)
+        handle_reply(draft, subject, email, gmail, reply_action.get("label", "Send reply"))
 
     print(); hr("=",62,CYAN)
     print(f"  {DIM}Done.  Dashboard: http://localhost:8000{R}")
@@ -542,6 +546,7 @@ def main():
             for email in reversed(gmail.get_recent_emails(20, 1)):
                 if email["id"] in seen: continue
                 seen.add(email["id"]); save_seen(seen)
+                increment_stat("emails_received")
                 if not should_process_email(email):
                     continue
                 process_email(email, gmail, calendar, notion, classifier)

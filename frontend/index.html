@@ -189,12 +189,12 @@ async function load(){
 
 function renderDash(){
   const cards=[
-    {n:S.emails_processed||0,   l:'Emails Processed',   e:'📬',c:'c1'},
-    {n:S.meetings_scheduled||0, l:'Meetings Scheduled',  e:'📅',c:'c2'},
-    {n:S.tasks_created||0,      l:'Tasks Created',       e:'✅',c:'c3'},
-    {n:S.invoices_logged||0,    l:'Invoices Logged',     e:'💰',c:'c4'},
-    {n:S.replies_sent||0,       l:'Replies Sent',        e:'📧',c:'c5'},
-    {n:S.estimated_minutes_saved||0,l:'Minutes Saved',   e:'⏱️',c:'c6'},
+    {n:S.emails_received||0,    l:'Emails Received',     e:'📥',c:'c1'},
+    {n:S.emails_processed||0,   l:'Emails Processed',    e:'📬',c:'c2'},
+    {n:S.replies_sent||0,       l:'Replies Sent',        e:'📧',c:'c3'},
+    {n:S.replies_skipped||0,    l:'Replies Skipped',     e:'⏭️',c:'c4'},
+    {n:S.total_skipped||0,      l:'Total Skipped Actions',e:'🛑',c:'c5'},
+    {n:S.total_actions_done||0, l:'Total Done Actions',  e:'✅',c:'c6'},
   ];
   document.getElementById('sg1').innerHTML=cards.map(c=>`
     <div class="scard ${c.c}"><div class="semoji">${c.e}</div><div class="snum">${c.n}</div><div class="slabel">${c.l}</div></div>`).join('');
@@ -276,12 +276,12 @@ function renderHist(){
 
 function renderStats(){
   const cards=[
-    {n:S.emails_processed||0,   l:'Total Emails Processed',e:'📬',c:'c1'},
-    {n:S.meetings_scheduled||0, l:'Meetings Scheduled',    e:'📅',c:'c2'},
-    {n:S.tasks_created||0,      l:'Tasks Created',         e:'✅',c:'c3'},
-    {n:S.invoices_logged||0,    l:'Invoices Logged',       e:'💰',c:'c4'},
-    {n:S.reminders_set||0,      l:'Reminders Set',         e:'🔔',c:'c5'},
-    {n:S.replies_sent||0,       l:'Replies Sent',          e:'📧',c:'c6'},
+    {n:S.emails_received||0,    l:'Total Emails Received', e:'📥',c:'c1'},
+    {n:S.emails_processed||0,   l:'Total Emails Processed',e:'📬',c:'c2'},
+    {n:S.total_actions_done||0, l:'Actions Done',          e:'✅',c:'c3'},
+    {n:S.total_skipped||0,      l:'Actions Skipped',       e:'⏭️',c:'c4'},
+    {n:S.replies_sent||0,       l:'Replies Sent',          e:'📧',c:'c5'},
+    {n:S.replies_skipped||0,    l:'Replies Skipped',       e:'🛑',c:'c6'},
   ];
   document.getElementById('sg2').innerHTML=cards.map(c=>`
     <div class="scard ${c.c}"><div class="semoji">${c.e}</div><div class="snum">${c.n}</div><div class="slabel">${c.l}</div></div>`).join('');

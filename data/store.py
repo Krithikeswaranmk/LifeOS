@@ -40,6 +40,7 @@ def get_history(limit: int = 100) -> list:
 def _ensure_stats():
     if not stats_table.all():
         stats_table.insert({
+            "emails_received":   0,
             "emails_processed":  0,
             "meetings_scheduled": 0,
             "tasks_created":     0,
@@ -52,7 +53,10 @@ def _ensure_stats():
 def increment_stat(key: str):
     _ensure_stats()
     try:
-        stats_table.update(increment(key))
+        row = stats_table.all()[0]
+        if key not in row:
+            stats_table.update({key: 0}, doc_ids=[row.doc_id])
+        stats_table.update(increment(key), doc_ids=[row.doc_id])
     except Exception:
         pass
 
@@ -60,7 +64,9 @@ def get_stats() -> dict:
     _ensure_stats()
     s = dict(stats_table.all()[0])
     history = history_table.all()
-    s["emails_processed"]   = len({h["email_subject"] + h["email_from"] for h in history})
+    s.setdefault("emails_received", s.get("emails_processed", 0))
+    s.setdefault("replies_skipped", 0)
+    s.setdefault("replies_sent", 0)
     s["total_actions_done"] = len([h for h in history if h.get("status") == "done"])
     s["total_skipped"]      = len([h for h in history if h.get("status") == "skipped"])
     s["estimated_minutes_saved"] = s["total_actions_done"] * 5
